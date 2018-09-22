@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ElementRef, ViewChild } from '@angular/core';
 
 @Component({
   selector: 'app-root',
@@ -6,5 +6,14 @@ import { Component } from '@angular/core';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent {
-  title = 'dnd';
+
+  @ViewChild('Image') image: ElementRef;
+
+  logEvent($event: PointerEvent) {
+    console.log($event);
+  }
+
+  setImage(files: File[]) {
+
+  }
 }
