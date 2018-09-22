@@ -5,13 +5,9 @@ import { Directive, ElementRef, EventEmitter, HostBinding, HostListener, Input, 
 })
 export class DropfileDirective {
 
-  @Input() uploadHandler: Function;
-
   @Output() uploadProgress = new EventEmitter<any>();
-  @Output() onFileDrop = new EventEmitter<File[]>();
-  @Output() onUploadSucces = new EventEmitter<any>();
-
-  private isDraggingOver = false;
+  @Output() fileDrop = new EventEmitter<File[]>();
+  @Output() uploadSuccess = new EventEmitter<any>();
 
   constructor(private renderer: Renderer2, private el: ElementRef) {}
 
@@ -36,13 +32,11 @@ export class DropfileDirective {
     $event.stopPropagation();
     $event.preventDefault();
     const { files } = $event.dataTransfer;
-    const fileReader = new FileReader();
     if (/\.(jpe?g|png|gif)$/i.test(files[0].name)) {
       const imageUrl = URL.createObjectURL(files[0]);
       this.renderer.setAttribute(this.el.nativeElement, 'src', imageUrl);
       this.renderer.removeClass(this.el.nativeElement, 'dragover');
     }
     this.renderer.addClass(this.el.nativeElement, 'drop');
-    this.uploadHandler(files[0]).then();
   }
 }
