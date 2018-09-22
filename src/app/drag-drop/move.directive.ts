@@ -1,33 +1,55 @@
-import { Directive, OnInit } from '@angular/core';
+import { Directive, HostBinding, HostListener, OnInit } from '@angular/core';
 import { DragDirective } from './drag.directive';
-import { fromEvent, Observable } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { DomSanitizer, SafeStyle } from '@angular/platform-browser';
+
+interface Position {
+  x: number;
+  y: number;
+}
 
 @Directive({
   selector: '[appMove]'
 })
-export class MoveDirective extends DragDirective implements OnInit {
-  private pointerDown$: Observable<Event>;
-  private pointerUp$: Observable<Event>;
-  private move$: Observable<Event>;
+export class MoveDirective extends DragDirective {
+  private didDragStart = false;
 
-  ngOnInit() {
-    this.initPointerDown();
-    this.initPointerUp();
-    this.initMoveEvent();
-  }
-
-  private initPointerDown() {
-    this.pointerDown$ = fromEvent(document, 'pointerdown');
-  }
-
-  private initPointerUp() {
-    this.pointerUp$ = fromEvent(document, 'pointerup');
-  }
-
-  private initMoveEvent() {
-    this.move$ = fromEvent(document, 'isDragging').pipe(
-      takeUntil(this.pointerUp$)
+  @HostBinding('style.transform') get transform(): SafeStyle {
+    return this.sanitizer.bypassSecurityTrustStyle(
+      `translateX(${this.position.x}px) translateY(${this.position.y}px)`
     );
   }
+
+  position: Position = {x: 0, y: 0};
+  startPosition: Position = {x: 0, y: 0};
+
+  constructor(private sanitizer: DomSanitizer) {
+    super();
+  }
+
+  @HostListener('isDragging', ['$event'])
+  onMove($event) {
+    if (this.didDragStart) {
+      this.position = {
+        x: $event.clientX - this.startPosition.x,
+        y: $event.clientY - this.startPosition.y,
+      };
+    }
+
+  }
+
+  @HostListener('dragStart', ['$event'])
+  onDragStart($event: PointerEvent) {
+      this.startPosition = {
+        x: $event.clientX - this.position.x,
+        y: $event.clientY - this.position.y,
+      };
+      this.didDragStart = true;
+  }
+
+  @HostListener('dragEnd')
+  onPointerUp() {
+    this.didDragStart = false;
+    this.position = {x: 0, y: 0};
+  }
+
 }
