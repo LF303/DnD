@@ -7,7 +7,7 @@ export class DragDirective {
 
   @HostBinding('class.draggable') draggable = true;
   @HostBinding('class.dragging') dragging = false;
-
+  @HostBinding('style.user-select') userSelect = 'none';
   @HostBinding('attr.touch-action') touchAction = 'none';
 
   @Output() dragStart = new EventEmitter();
@@ -19,6 +19,7 @@ export class DragDirective {
   @HostListener('pointerdown', ['$event'])
   onPointerDown($event: PointerEvent): void {
     this.isPointerDown = true;
+    this.dragging = true;
     this.dragStart.next($event);
   }
 
@@ -26,6 +27,7 @@ export class DragDirective {
   onPointerUp($event: PointerEvent): void {
     if (this.isPointerDown) {
       this.dragEnd.next($event);
+      this.dragging = false;
       this.isPointerDown = false;
     }
   }
